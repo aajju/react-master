@@ -10,16 +10,16 @@ import {
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { fetchCoinInfo, fetchCoinTickers } from "../api";
-import Router from "../Router";
 import Chart from "./Chart";
 import Price from "./Price";
+import { Helmet } from "react-helmet";
 
 function Coin() {
   const Container = styled.div`
     padding: 0px 20px;
     max-width: 480px;
     margin: 0 auto;
-    height: 200vh;
+    height: 120vh;
     background-color: ${(props) => props.theme.bgColor};
     color: ${(props) => props.theme.textColor};
   `;
@@ -28,8 +28,18 @@ function Coin() {
     padding: 100px 0px;
     display: flex;
     justify-content: center;
-    align-items: center;
+    /* align-items: center; */
+    position: relative;
   `;
+
+  const Back = styled.button`
+    font-size: 20px;
+    position: absolute;
+    left: 0px;
+    top: 10px;
+    display: block;
+  `;
+
   const Title = styled.h1`
     font-size: 60px;
     display: block;
@@ -199,7 +209,15 @@ function Coin() {
 
   return (
     <Container>
+      <Helmet>
+        <title>
+          {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
+        </title>
+      </Helmet>
       <Header>
+        <Link to={`/`}>
+          <Back>go back</Back>
+        </Link>
         <Title>
           {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
         </Title>
@@ -218,8 +236,8 @@ function Coin() {
               <span>{infoData?.symbol}</span>
             </OverViewItem>
             <OverViewItem>
-              <span>open source</span>
-              <span>{infoData?.open_source ? "yes" : "no"}</span>
+              <span>Price:</span>
+              <span>${tickersData?.quotes.USD.price.toFixed(3)}</span>
             </OverViewItem>
           </OverView>
 

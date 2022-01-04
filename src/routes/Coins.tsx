@@ -1,8 +1,11 @@
-import { useEffect, useState } from "react";
+// import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet";
 import { useQuery } from "react-query";
 import { Link } from "react-router-dom";
+import { useSetRecoilState } from "recoil";
 import styled from "styled-components";
 import { fetchCoins } from "../api";
+import { isDarkAtom } from "../atoms";
 
 function Coins() {
   const Container = styled.div`
@@ -17,7 +20,16 @@ function Coins() {
     padding: 100px 0px;
     display: flex;
     justify-content: center;
-    align-items: center;
+    position: relative;
+    /* align-items: center; */
+  `;
+
+  const DarkToggle = styled.button`
+    font-size: 20px;
+    position: absolute;
+    left: 0px;
+    top: 10px;
+    display: block;
   `;
   const Title = styled.h1`
     font-size: 60px;
@@ -78,9 +90,17 @@ function Coins() {
 
   // console.log(coins);
 
+  const setDarkAtom = useSetRecoilState(isDarkAtom);
+
   return (
     <Container>
+      <Helmet>
+        <title>Coins</title>
+      </Helmet>
       <Header>
+        <DarkToggle onClick={() => setDarkAtom((prev) => !prev)}>
+          mode change
+        </DarkToggle>
         <Title>Coins</Title>
       </Header>
       <CoinsList>
