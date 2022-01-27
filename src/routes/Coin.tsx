@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 import {
   Route,
@@ -9,159 +8,145 @@ import {
 } from "react-router";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
-import { fetchCoinInfo, fetchCoinTickers } from "../api";
+import { fetchCoinInfo, fetchCoinTickers, InfoData, PriceData } from "../api";
 import Chart from "./Chart";
 import Price from "./Price";
 import { Helmet } from "react-helmet";
+import { useRecoilState } from "recoil";
+import { isDarkAtom, selectedCoin } from "../atoms";
+import { useEffect } from "react";
+
+const Container = styled.div`
+  padding: 0px 20px;
+  max-width: 480px;
+  margin: 0 auto;
+  height: 120vh;
+`;
+
+const Header = styled.header`
+  height: 10vh;
+  /* padding: 100px 0px; */
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  place-content: center;
+  padding: 0 20px;
+  gap: 20px;
+`;
+
+const Back = styled.button<{ isDark: boolean }>`
+  display: flex;
+  cursor: pointer;
+  justify-content: center;
+  align-items: center;
+  height: 30%;
+  justify-self: start;
+  align-self: center;
+  border-radius: 5px;
+  width: 30px;
+  height: 30px;
+  border-radius: 15px;
+  font-size: 30px;
+  font-weight: 500;
+  background-color: ${(props) =>
+    props.isDark ? props.theme.textColor : props.theme.bgColor};
+  color: ${(props) => props.theme.accentColor};
+  text-align: center;
+`;
+const Title = styled.h1`
+  font-size: 30px;
+  color: ${(props) => props.theme.accentColor};
+  grid-column: 2 / 3;
+  place-self: center;
+`;
+
+const DarkToggle = styled.button`
+  display: flex;
+  cursor: pointer;
+  justify-content: center;
+  align-items: center;
+  height: 30%;
+  place-self: center;
+  justify-self: start;
+  border-radius: 5px;
+  padding: 15px;
+  span {
+    font-size: 12px;
+  }
+`;
+
+const Loader = styled.span`
+  text-align: center;
+`;
+
+const OverView = styled.div`
+  /* background-color: black; */
+  width: 90%;
+  height: 70px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: auto;
+  padding: 00px 40px;
+  margin-bottom: 30px;
+  border: 1px solid ${(props) => props.theme.textColor};
+`;
+
+const OverViewItem = styled.div`
+  /* background-color: yellowgreen; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  & span:first-child {
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+`;
+
+const Description = styled.div`
+  display: flex;
+  font-size: 15px;
+  /* text-align: center; */
+  width: 90%;
+  margin: auto;
+  margin-bottom: 30px;
+  line-height: 1.3;
+`;
+
+const Tabs = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  width: 90%;
+  margin: auto;
+  justify-content: space-evenly;
+
+  margin-bottom: 40px;
+`;
+
+const Tab = styled.div<{ isActive: boolean }>`
+  /* background-color: black; */
+  text-align: center;
+  text-transform: uppercase;
+  border-radius: 15px;
+  border: solid 1px
+    ${(props) =>
+      props.isActive ? props.theme.accentColor : props.theme.textColor};
+  a {
+    display: block;
+    height: 100%;
+    padding: 20px 0px;
+
+    color: ${(props) =>
+      props.isActive ? props.theme.accentColor : props.theme.textColor};
+  }
+`;
+
+// ------ function ------
 
 function Coin() {
-  const Container = styled.div`
-    padding: 0px 20px;
-    max-width: 480px;
-    margin: 0 auto;
-    height: 120vh;
-    background-color: ${(props) => props.theme.bgColor};
-    color: ${(props) => props.theme.textColor};
-  `;
-  const Header = styled.header`
-    height: 10vh;
-    padding: 100px 0px;
-    display: flex;
-    justify-content: center;
-    /* align-items: center; */
-    position: relative;
-  `;
-
-  const Back = styled.button`
-    font-size: 20px;
-    position: absolute;
-    left: 0px;
-    top: 10px;
-    display: block;
-  `;
-
-  const Title = styled.h1`
-    font-size: 60px;
-    display: block;
-    margin-bottom: 20px;
-  `;
-  const Loader = styled.span`
-    text-align: center;
-  `;
-
-  const OverView = styled.div`
-    background-color: darkgray;
-    width: 90%;
-    height: 70px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: auto;
-    padding: 00px 40px;
-    margin-bottom: 30px;
-  `;
-
-  const OverViewItem = styled.div`
-    /* background-color: yellowgreen; */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-
-    & span:first-child {
-      font-size: 12px;
-      text-transform: uppercase;
-    }
-  `;
-
-  const Description = styled.div`
-    display: flex;
-    font-size: 12px;
-    /* text-align: center; */
-    width: 90%;
-    margin: auto;
-    margin-bottom: 30px;
-  `;
-
-  const Tabs = styled.div`
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    width: 90%;
-    margin: auto;
-    justify-content: space-evenly;
-  `;
-
-  const Tab = styled.div<{ isActive: boolean }>`
-    background-color: darkgray;
-    text-align: center;
-    text-transform: uppercase;
-    padding: 20px 0px;
-    border-radius: 15px;
-
-    a {
-      display: block;
-      color: ${(props) =>
-        props.isActive ? props.theme.accentColor : props.theme.textColor};
-    }
-  `;
-
-  interface InfoData {
-    id: string;
-    name: string;
-    symbol: string;
-    rank: number;
-    is_new: boolean;
-    is_active: boolean;
-    type: string;
-    description: string;
-    message: string;
-    open_source: boolean;
-    started_at: string;
-    development_status: string;
-    hardware_wallet: boolean;
-    proof_type: string;
-    org_structure: string;
-    hash_algorithm: string;
-    first_data_at: string;
-    last_data_at: string;
-  }
-
-  interface PriceData {
-    id: string;
-    name: string;
-    symbol: string;
-    rank: number;
-    circulating_supply: number;
-    total_supply: number;
-    max_supply: number;
-    beta_value: number;
-    first_data_at: string;
-    last_updated: string;
-    quotes: {
-      USD: {
-        ath_date: string;
-        ath_price: number;
-        market_cap: number;
-        market_cap_change_24h: number;
-        percent_change_1h: number;
-        percent_change_1y: number;
-        percent_change_6h: number;
-        percent_change_7d: number;
-        percent_change_12h: number;
-        percent_change_15m: number;
-        percent_change_24h: number;
-        percent_change_30d: number;
-        percent_change_30m: number;
-        percent_from_price_ath: number;
-        price: number;
-        volume_24h: number;
-        volume_24h_change_24h: number;
-      };
-    };
-  }
-
   interface RouteParams {
     coinId: string;
   }
@@ -171,56 +156,63 @@ function Coin() {
   }
 
   const { coinId } = useParams<RouteParams>();
+
   // const { name } = useLocation().state as RouteState;
   // console.log(name);
   const { state } = useLocation<RouteState>();
   // console.log(state?.name);
-  const chartMatch = useRouteMatch("/:coinId/chart");
-  const priceMatch = useRouteMatch("/:coinId/price");
-  console.log(chartMatch, priceMatch);
+  const chartMatch = useRouteMatch("/:random1/chart");
+  const priceMatch = useRouteMatch("/:random2/price");
+  // console.log(chartMatch, priceMatch);
+  const [DarkAtom, setDarkAtom] = useRecoilState(isDarkAtom);
+  const [coinAtom, setCoin] = useRecoilState(selectedCoin);
+  console.log(coinAtom);
 
   const { isLoading: infoLoading, data: infoData } = useQuery<InfoData>(
     ["info", coinId],
-    () => fetchCoinInfo(coinId)
+    () => {
+      return fetchCoinInfo(coinId);
+    }
   );
   const { isLoading: tickersLoading, data: tickersData } = useQuery<PriceData>(
     ["tickers", coinId],
-    () => fetchCoinTickers(coinId)
+    () => {
+      return fetchCoinTickers(coinId);
+    }
   );
 
-  const loading = infoLoading || tickersLoading;
-  // const [info, setInfo] = useState<InfoData>();
-  // const [priceInfo, setPriceInfo] = useState<PriceData>();
-  // const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    setCoin({ id: coinId, name: infoData?.name });
+  }, [infoData]);
 
-  // useEffect(() => {
-  //   (async () => {
-  //     const infoData = await (
-  //       await fetch(`https://api.coinpaprika.com/v1/coins/${coinId}`)
-  //     ).json();
-  //     const priceData = await (
-  //       await fetch(`https://api.coinpaprika.com/v1/tickers/${coinId}`)
-  //     ).json();
-  //     setInfo(infoData);
-  //     setPriceInfo(priceData);
-  //     setLoading(false);
-  //   })();
-  // }, []);
+  const loading = infoLoading || tickersLoading;
 
   return (
     <Container>
       <Helmet>
         <title>
-          {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
+          {state?.name !== ""
+            ? state?.name
+            : loading
+            ? "Loading..."
+            : infoData?.name}
         </title>
       </Helmet>
       <Header>
-        <Link to={`/`}>
-          <Back>go back</Back>
-        </Link>
+        <Back isDark={DarkAtom}>
+          <Link to={`/`}>&#60; </Link>
+        </Back>
+
         <Title>
-          {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
+          {state?.name !== ""
+            ? state?.name
+            : loading
+            ? "Loading..."
+            : infoData?.name}
         </Title>
+        <DarkToggle onClick={() => setDarkAtom((prev) => !prev)}>
+          <span>{DarkAtom ? "white mode" : "dark mode"}</span>
+        </DarkToggle>
       </Header>
       {loading ? (
         <Loader>loading...</Loader>
@@ -264,10 +256,10 @@ function Coin() {
           </Tabs>
 
           <Switch>
-            <Route path="/:coinId/chart">
+            <Route path="/:random3/chart">
               <Chart coinId={coinId} />
             </Route>
-            <Route path="/:coinId/price">
+            <Route path="/:random4/price">
               <Price />
             </Route>
           </Switch>

@@ -2,68 +2,82 @@
 import { Helmet } from "react-helmet";
 import { useQuery } from "react-query";
 import { Link } from "react-router-dom";
-import { useSetRecoilState } from "recoil";
+import { useRecoilState, useSetRecoilState } from "recoil";
 import styled from "styled-components";
 import { fetchCoins } from "../api";
-import { isDarkAtom } from "../atoms";
+import { isDarkAtom, selectedCoin } from "../atoms";
+
+const Container = styled.div`
+  padding: 0px 20px;
+  max-width: 480px;
+  margin: 0 auto;
+`;
+const Header = styled.header`
+  height: 10vh;
+  /* padding: 100px 0px; */
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  padding-right: 20px;
+`;
+const Title = styled.h1`
+  font-size: 48px;
+  color: ${(props) => props.theme.accentColor};
+  grid-column: 2 / 3;
+  place-self: center;
+`;
+
+const DarkToggle = styled.button`
+  display: flex;
+  cursor: pointer;
+  justify-content: center;
+  align-items: center;
+  height: 30%;
+  place-self: center;
+  justify-self: flex-end;
+  border-radius: 5px;
+  padding: 15px;
+  span {
+    font-size: 12px;
+  }
+`;
+
+const CoinsList = styled.ul``;
+const CoinCard = styled.li`
+  background-color: ${(props) => props.theme.cardBgColor};
+  color: ${(props) => props.theme.textColor};
+  border: solid 1px ${(props) => props.theme.textColor};
+
+  border-radius: 15px;
+  margin-bottom: 10px;
+  img {
+    height: 40px;
+    width: 40px;
+    margin-right: 10px;
+  }
+  a {
+    padding: 20px;
+    transition: color 0.2s ease-in;
+    /* display: block; */
+    display: flex;
+    align-items: center;
+  }
+  &:hover {
+    border: solid 1px ${(props) => props.theme.accentColor};
+    a {
+      color: ${(props) => props.theme.accentColor};
+      font-weight: 500;
+    }
+  }
+`;
+
+const Loader = styled.span`
+  text-align: center;
+`;
+
+// -------- fucntion --------
 
 function Coins() {
-  const Container = styled.div`
-    padding: 0px 20px;
-    max-width: 480px;
-    margin: 0 auto;
-    background-color: ${(props) => props.theme.bgColor};
-    color: ${(props) => props.theme.textColor};
-  `;
-  const Header = styled.header`
-    height: 10vh;
-    padding: 100px 0px;
-    display: flex;
-    justify-content: center;
-    position: relative;
-    /* align-items: center; */
-  `;
-
-  const DarkToggle = styled.button`
-    font-size: 20px;
-    position: absolute;
-    left: 0px;
-    top: 10px;
-    display: block;
-  `;
-  const Title = styled.h1`
-    font-size: 60px;
-    display: block;
-  `;
-  const CoinsList = styled.ul``;
-  const CoinCard = styled.li`
-    background-color: ${(props) => props.theme.textColor};
-    color: ${(props) => props.theme.bgColor};
-    border-radius: 15px;
-    margin-bottom: 10px;
-    img {
-      height: 40px;
-      width: 40px;
-      margin-right: 10px;
-    }
-    a {
-      padding: 20px;
-      transition: color 0.2s ease-in;
-      /* display: block; */
-      display: flex;
-      align-items: center;
-    }
-    &:hover {
-      a {
-        color: ${(props) => props.theme.accentColor};
-      }
-    }
-  `;
-
-  const Loader = styled.span`
-    text-align: center;
-  `;
-
   interface coinsState {
     id: string;
     is_active: boolean;
@@ -90,7 +104,12 @@ function Coins() {
 
   // console.log(coins);
 
-  const setDarkAtom = useSetRecoilState(isDarkAtom);
+  const [DarkAtom, setDarkAtom] = useRecoilState(isDarkAtom);
+  const setCoin = useSetRecoilState(selectedCoin);
+
+  const onClick = (coinId: string, name: string) => {
+    setCoin({ id: coinId, name });
+  };
 
   return (
     <Container>
@@ -98,10 +117,10 @@ function Coins() {
         <title>Coins</title>
       </Helmet>
       <Header>
-        <DarkToggle onClick={() => setDarkAtom((prev) => !prev)}>
-          mode change
-        </DarkToggle>
         <Title>Coins</Title>
+        <DarkToggle onClick={() => setDarkAtom((prev) => !prev)}>
+          <span>{DarkAtom ? "white mode" : "dark mode"}</span>
+        </DarkToggle>
       </Header>
       <CoinsList>
         {isLoading ? (
@@ -114,6 +133,7 @@ function Coins() {
                   pathname: `/${coin.id}/chart`,
                   state: { name: coin.name },
                 }}
+                onClick={() => onClick(coin.id, coin.name)}
               >
                 <img
                   src={`https://cryptoicon-api.vercel.app/api/icon/${coin.symbol.toLowerCase()}`}
