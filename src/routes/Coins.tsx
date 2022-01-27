@@ -2,10 +2,10 @@
 import { Helmet } from "react-helmet";
 import { useQuery } from "react-query";
 import { Link } from "react-router-dom";
-import { useRecoilState, useSetRecoilState } from "recoil";
+import { useRecoilState } from "recoil";
 import styled from "styled-components";
 import { fetchCoins } from "../api";
-import { isDarkAtom, selectedCoin } from "../atoms";
+import { isDarkAtom } from "../atoms";
 
 const Container = styled.div`
   padding: 0px 20px;
@@ -105,11 +105,6 @@ function Coins() {
   // console.log(coins);
 
   const [DarkAtom, setDarkAtom] = useRecoilState(isDarkAtom);
-  const setCoin = useSetRecoilState(selectedCoin);
-
-  const onClick = (coinId: string, name: string) => {
-    setCoin({ id: coinId, name });
-  };
 
   return (
     <Container>
@@ -133,7 +128,6 @@ function Coins() {
                   pathname: `/${coin.id}/chart`,
                   state: { name: coin.name },
                 }}
-                onClick={() => onClick(coin.id, coin.name)}
               >
                 <img
                   src={`https://cryptoicon-api.vercel.app/api/icon/${coin.symbol.toLowerCase()}`}

@@ -13,8 +13,7 @@ import Chart from "./Chart";
 import Price from "./Price";
 import { Helmet } from "react-helmet";
 import { useRecoilState } from "recoil";
-import { isDarkAtom, selectedCoin } from "../atoms";
-import { useEffect } from "react";
+import { isDarkAtom } from "../atoms";
 
 const Container = styled.div`
   padding: 0px 20px;
@@ -156,7 +155,7 @@ function Coin() {
   }
 
   const { coinId } = useParams<RouteParams>();
-
+  console.log(coinId);
   // const { name } = useLocation().state as RouteState;
   // console.log(name);
   const { state } = useLocation<RouteState>();
@@ -165,8 +164,6 @@ function Coin() {
   const priceMatch = useRouteMatch("/:random2/price");
   // console.log(chartMatch, priceMatch);
   const [DarkAtom, setDarkAtom] = useRecoilState(isDarkAtom);
-  const [coinAtom, setCoin] = useRecoilState(selectedCoin);
-  console.log(coinAtom);
 
   const { isLoading: infoLoading, data: infoData } = useQuery<InfoData>(
     ["info", coinId],
@@ -181,34 +178,22 @@ function Coin() {
     }
   );
 
-  useEffect(() => {
-    setCoin({ id: coinId, name: infoData?.name });
-  }, [infoData]);
-
   const loading = infoLoading || tickersLoading;
 
   return (
     <Container>
       <Helmet>
         <title>
-          {state?.name !== ""
-            ? state?.name
-            : loading
-            ? "Loading..."
-            : infoData?.name}
+          {state?.name ? state?.name : loading ? "Loading..." : "abc"}
         </title>
       </Helmet>
       <Header>
-        <Back onClick={() => setCoin({ id: "", name: "" })} isDark={DarkAtom}>
+        <Back isDark={DarkAtom}>
           <Link to={`/`}>&#60; </Link>
         </Back>
 
         <Title>
-          {state?.name !== ""
-            ? state?.name
-            : loading
-            ? "Loading..."
-            : infoData?.name}
+          {state?.name ? state?.name : loading ? "Loading..." : infoData?.name}
         </Title>
         <DarkToggle onClick={() => setDarkAtom((prev) => !prev)}>
           <span>{DarkAtom ? "white mode" : "dark mode"}</span>

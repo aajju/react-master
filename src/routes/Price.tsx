@@ -1,7 +1,5 @@
-import { useRecoilValue } from "recoil";
 import styled from "styled-components";
 import { InfoData, PriceData } from "../api";
-import { selectedCoin } from "../atoms";
 
 const Rows = styled.div`
   padding: 10px 20px;
