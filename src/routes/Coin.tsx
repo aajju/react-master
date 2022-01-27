@@ -199,7 +199,7 @@ function Coin() {
         </title>
       </Helmet>
       <Header>
-        <Back isDark={DarkAtom}>
+        <Back onClick={() => setCoin({ id: "", name: "" })} isDark={DarkAtom}>
           <Link to={`/`}>&#60; </Link>
         </Back>
 
@@ -246,12 +246,27 @@ function Coin() {
               <span>{tickersData?.max_supply.toLocaleString()}</span>
             </OverViewItem>
           </OverView>
+
           <Tabs>
             <Tab isActive={chartMatch !== null}>
-              <Link to={`/${coinId}/chart`}>chart</Link>
+              <Link
+                to={{
+                  pathname: `/${coinId}/chart`,
+                  state: { name: infoData?.name },
+                }}
+              >
+                chart
+              </Link>
             </Tab>
             <Tab isActive={priceMatch !== null}>
-              <Link to={`/${coinId}/price`}>price</Link>
+              <Link
+                to={{
+                  pathname: `/${coinId}/price`,
+                  state: { name: infoData?.name },
+                }}
+              >
+                price
+              </Link>
             </Tab>
           </Tabs>
 
@@ -260,7 +275,9 @@ function Coin() {
               <Chart coinId={coinId} />
             </Route>
             <Route path="/:random4/price">
-              <Price aaa={infoData} bbb={tickersData} />
+              {infoData && tickersData && (
+                <Price info={infoData} price={tickersData} />
+              )}
             </Route>
           </Switch>
         </>
