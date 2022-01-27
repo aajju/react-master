@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { useQuery } from "react-query";
 import {
   Switch,
@@ -9,118 +8,150 @@ import {
 } from "react-router-dom";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
-import { fetchCoinInfo, fetchCoinTickers } from "../api";
+import { fetchCoinInfo, fetchCoinTickers, InfoData, PriceData } from "../api";
 import Chart from "./Chart";
 import Price from "./Price";
 import { Helmet } from "react-helmet";
+import { useRecoilState } from "recoil";
+import { isDarkAtom } from "../atoms";
 
-function Coin() {
-  const Container = styled.div`
-    padding: 0px 20px;
-    max-width: 480px;
-    margin: 0 auto;
-    height: 120vh;
-    background-color: ${(props) => props.theme.bgColor};
-    color: ${(props) => props.theme.textColor};
-  `;
-  const Header = styled.header`
-    height: 10vh;
-    padding: 100px 0px;
-    display: flex;
-    justify-content: center;
-    /* align-items: center; */
-    position: relative;
-  `;
+const Container = styled.div`
+  padding: 0px 20px;
+  max-width: 480px;
+  margin: 0 auto;
+  height: 120vh;
+`;
 
-  const Back = styled.button`
-    font-size: 20px;
-    position: absolute;
-    left: 0px;
-    top: 10px;
-    display: block;
-  `;
+const Header = styled.header`
+  height: 10vh;
+  /* padding: 100px 0px; */
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  place-content: center;
+  padding: 0 20px;
+  gap: 20px;
+`;
 
-  const Title = styled.h1`
-    font-size: 60px;
-    display: block;
-    margin-bottom: 20px;
-  `;
-  const Loader = styled.span`
-    text-align: center;
-  `;
+const Back = styled.button<{ isDark: boolean }>`
+  display: flex;
+  cursor: pointer;
+  justify-content: center;
+  align-items: center;
+  height: 30%;
+  justify-self: start;
+  align-self: center;
+  border-radius: 5px;
+  width: 30px;
+  height: 30px;
+  border-radius: 15px;
+  font-size: 30px;
+  font-weight: 500;
+  background-color: ${(props) =>
+    props.isDark ? props.theme.textColor : props.theme.bgColor};
+  color: ${(props) => props.theme.accentColor};
+  text-align: center;
+`;
+const Title = styled.h1`
+  font-size: 30px;
+  color: ${(props) => props.theme.accentColor};
+  grid-column: 2 / 3;
+  place-self: center;
+`;
 
-  const OverView = styled.div`
-    background-color: darkgray;
-    width: 90%;
-    height: 70px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: auto;
-    padding: 00px 40px;
-    margin-bottom: 30px;
-  `;
-
-  const OverViewItem = styled.div`
-    /* background-color: yellowgreen; */
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-
-    & span:first-child {
-      font-size: 12px;
-      text-transform: uppercase;
-    }
-  `;
-
-  const Description = styled.div`
-    display: flex;
+const DarkToggle = styled.button`
+  display: flex;
+  cursor: pointer;
+  justify-content: center;
+  align-items: center;
+  height: 30%;
+  place-self: center;
+  justify-self: start;
+  border-radius: 5px;
+  padding: 15px;
+  span {
     font-size: 12px;
-    /* text-align: center; */
-    width: 90%;
-    margin: auto;
-    margin-bottom: 30px;
-  `;
-
-  const Tabs = styled.div`
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    width: 90%;
-    margin: auto;
-    justify-content: space-evenly;
-  `;
-
-  const Tab = styled.div<{ isActive: boolean }>`
-    background-color: darkgray;
-    text-align: center;
-    text-transform: uppercase;
-    margin-bottom: 5px;
   }
 `;
-const Description = styled.p`
-  margin: 20px 0px;
+
+const Loader = styled.span`
+  text-align: center;
 `;
+
+const OverView = styled.div`
+  /* background-color: black; */
+  width: 90%;
+  height: 70px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: auto;
+  padding: 00px 40px;
+  margin-bottom: 30px;
+  border: 1px solid ${(props) => props.theme.textColor};
+`;
+
+const OverViewItem = styled.div`
+  /* background-color: yellowgreen; */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+
+  & span:first-child {
+    font-size: 12px;
+    text-transform: uppercase;
+  }
+`;
+
+const Description = styled.div`
+  display: flex;
+  font-size: 15px;
+  /* text-align: center; */
+  width: 90%;
+  margin: auto;
+  margin-bottom: 30px;
+  line-height: 1.3;
+`;
+
 const Tabs = styled.div`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  margin: 25px 0px;
-  gap: 10px;
+  gap: 20px;
+  width: 90%;
+  margin: auto;
+  justify-content: space-evenly;
+
+  margin-bottom: 40px;
 `;
-const Tab = styled.span<{ isActive: boolean }>`
+
+const Tab = styled.div<{ isActive: boolean }>`
+  /* background-color: black; */
   text-align: center;
   text-transform: uppercase;
-  font-size: 12px;
-  font-weight: 400;
-  background-color: rgba(0, 0, 0, 0.5);
-  border-radius: 10px;
-  color: ${(props) =>
-    props.isActive ? props.theme.accentColor : props.theme.textColor};
+  border-radius: 15px;
+  border: solid 1px
+    ${(props) =>
+      props.isActive ? props.theme.accentColor : props.theme.textColor};
   a {
-    padding: 7px 0px;
     display: block;
+    height: 100%;
+    padding: 20px 0px;
+
+    color: ${(props) =>
+      props.isActive ? props.theme.accentColor : props.theme.textColor};
+  }
+`;
+
+// ------ function ------
+
+function Coin() {
+  interface RouteParams {
+    coinId: string;
+  }
+
+  interface RouteState {
+    name: string;
   }
 `;
 interface RouteParams {
@@ -184,32 +215,47 @@ interface PriceData {
 }
 function Coin() {
   const { coinId } = useParams<RouteParams>();
+  console.log(coinId);
+  // const { name } = useLocation().state as RouteState;
+  // console.log(name);
   const { state } = useLocation<RouteState>();
-  const priceMatch = useRouteMatch("/:coinId/price");
-  const chartMatch = useRouteMatch("/:coinId/chart");
+  // console.log(state?.name);
+  const chartMatch = useRouteMatch("/:random1/chart");
+  const priceMatch = useRouteMatch("/:random2/price");
+  // console.log(chartMatch, priceMatch);
+  const [DarkAtom, setDarkAtom] = useRecoilState(isDarkAtom);
+
   const { isLoading: infoLoading, data: infoData } = useQuery<InfoData>(
     ["info", coinId],
-    () => fetchCoinInfo(coinId)
+    () => {
+      return fetchCoinInfo(coinId);
+    }
   );
   const { isLoading: tickersLoading, data: tickersData } = useQuery<PriceData>(
     ["tickers", coinId],
-    () => fetchCoinTickers(coinId)
+    () => {
+      return fetchCoinTickers(coinId);
+    }
   );
   const loading = infoLoading || tickersLoading;
   return (
     <Container>
       <Helmet>
         <title>
-          {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
+          {state?.name ? state?.name : loading ? "Loading..." : "abc"}
         </title>
       </Helmet>
       <Header>
-        <Link to={`/`}>
-          <Back>go back</Back>
-        </Link>
+        <Back isDark={DarkAtom}>
+          <Link to={`/`}>&#60; </Link>
+        </Back>
+
         <Title>
-          {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
+          {state?.name ? state?.name : loading ? "Loading..." : infoData?.name}
         </Title>
+        <DarkToggle onClick={() => setDarkAtom((prev) => !prev)}>
+          <span>{DarkAtom ? "white mode" : "dark mode"}</span>
+        </DarkToggle>
       </Header>
       {loading ? (
         <Loader>Loading...</Loader>
@@ -242,20 +288,48 @@ function Coin() {
             </OverviewItem>
           </Overview>
 
+          <OverView>
+            <OverViewItem>
+              <span>total supply</span>
+              <span>{tickersData?.total_supply.toLocaleString()}</span>
+            </OverViewItem>
+
+            <OverViewItem>
+              <span>max supply</span>
+              <span>{tickersData?.max_supply.toLocaleString()}</span>
+            </OverViewItem>
+          </OverView>
+
           <Tabs>
             <Tab isActive={chartMatch !== null}>
-              <Link to={`/${coinId}/chart`}>Chart</Link>
+              <Link
+                to={{
+                  pathname: `/${coinId}/chart`,
+                  state: { name: infoData?.name },
+                }}
+              >
+                chart
+              </Link>
             </Tab>
             <Tab isActive={priceMatch !== null}>
-              <Link to={`/${coinId}/price`}>Price</Link>
+              <Link
+                to={{
+                  pathname: `/${coinId}/price`,
+                  state: { name: infoData?.name },
+                }}
+              >
+                price
+              </Link>
             </Tab>
           </Tabs>
           <Switch>
-            <Route path="/:coinId/chart">
+            <Route path="/:random3/chart">
               <Chart coinId={coinId} />
             </Route>
-            <Route path="/:coinId/price">
-              <Price />
+            <Route path="/:random4/price">
+              {infoData && tickersData && (
+                <Price info={infoData} price={tickersData} />
+              )}
             </Route>
             <Route path={`/:coinId/chart`}>
               <Chart />
