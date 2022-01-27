@@ -4,109 +4,88 @@ import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { fetchCoins } from "../api";
 
-function Coins() {
-  const Container = styled.div`
-    padding: 0px 20px;
-    max-width: 480px;
-    margin: 0 auto;
-    background-color: ${(props) => props.theme.bgColor};
-    color: ${(props) => props.theme.textColor};
-  `;
-  const Header = styled.header`
-    height: 10vh;
-    padding: 100px 0px;
+const Container = styled.div`
+  padding: 0px 20px;
+  max-width: 480px;
+  margin: 0 auto;
+`;
+const Header = styled.header`
+  height: 15vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+`;
+const CoinsList = styled.ul``;
+const Coin = styled.li`
+  background-color: white;
+  color: ${(props) => props.theme.bgColor};
+  border-radius: 15px;
+  margin-bottom: 10px;
+  a {
     display: flex;
-    justify-content: center;
     align-items: center;
-  `;
-  const Title = styled.h1`
-    font-size: 60px;
-    display: block;
-  `;
-  const CoinsList = styled.ul``;
-  const CoinCard = styled.li`
-    background-color: ${(props) => props.theme.textColor};
-    color: ${(props) => props.theme.bgColor};
-    border-radius: 15px;
-    margin-bottom: 10px;
-    img {
-      height: 40px;
-      width: 40px;
-      margin-right: 10px;
-    }
-    a {
-      padding: 20px;
-      transition: color 0.2s ease-in;
-      /* display: block; */
-      display: flex;
-      align-items: center;
-    }
-    &:hover {
-      a {
-        color: ${(props) => props.theme.accentColor};
-      }
-    }
-  `;
-
-  const Loader = styled.span`
-    text-align: center;
-  `;
-
-  interface coinsState {
-    id: string;
-    is_active: boolean;
-    is_new: boolean;
-    name: string;
-    rank: number;
-    symbol: string;
-    type: string;
+    padding: 20px;
+    transition: color 0.2s ease-in;
   }
+  &:hover {
+    a {
+      color: ${(props) => props.theme.accentColor};
+    }
+  }
+`;
+const Title = styled.h1`
+  font-size: 48px;
+  color: ${(props) => props.theme.accentColor};
+`;
+const Loader = styled.span`
+  text-align: center;
+  display: block;
+`;
+const Img = styled.img`
+  width: 35px;
+  height: 35px;
+  margin-right: 10px;
+`;
 
-  const { isLoading, data } = useQuery<coinsState[]>("allCoins", fetchCoins);
+interface ICoin {
+  id: string;
+  name: string;
+  symbol: string;
+  rank: number;
+  is_new: boolean;
+  is_active: boolean;
+  type: string;
+}
 
-  // const [coins, setCoins] = useState<coinsState[]>([]);
-  // const [loading, setLoading] = useState(true);
-
-  // useEffect(() => {
-  //   (async () => {
-  //     const response = await fetch("https://api.coinpaprika.com/v1/coins");
-  //     const json = await response.json();
-  //     setCoins(json.slice(0, 100));
-  //     setLoading(false);
-  //   })();
-  // }, []);
-
-  // console.log(coins);
-
+function Coins() {
+  const { isLoading, data } = useQuery<ICoin[]>("allCoins", fetchCoins);
   return (
     <Container>
       <Header>
-        <Title>Coins</Title>
+        <Title>코인</Title>
       </Header>
-      <CoinsList>
-        {isLoading ? (
-          <Loader>loading...</Loader>
-        ) : (
-          data?.slice(0, 100).map((coin) => (
-            <CoinCard key={coin.id}>
+      {isLoading ? (
+        <Loader>Loading...</Loader>
+      ) : (
+        <CoinsList>
+          {data?.slice(0, 100).map((coin) => (
+            <Coin key={coin.id}>
               <Link
                 to={{
-                  pathname: `/${coin.id}/chart`,
+                  pathname: `/${coin.id}`,
                   state: { name: coin.name },
                 }}
               >
-                <img
+                <Img
                   src={`https://cryptoicon-api.vercel.app/api/icon/${coin.symbol.toLowerCase()}`}
-                  alt=""
                 />
-                <div>{coin.name} &rarr;</div>
+                {coin.name} &rarr;
               </Link>
-            </CoinCard>
-          ))
-        )}
-      </CoinsList>
+            </Coin>
+          ))}
+        </CoinsList>
+      )}
     </Container>
   );
 }
-
 export default Coins;

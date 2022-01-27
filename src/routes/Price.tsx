@@ -1,3 +1,7 @@
+// interface PriceProps {
+//   coinId: string;
+// }
+
 function Price() {
   return <h1>Price</h1>;
 }
