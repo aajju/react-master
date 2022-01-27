@@ -12,41 +12,90 @@ import styled from "styled-components";
 import { fetchCoinInfo, fetchCoinTickers } from "../api";
 import Chart from "./Chart";
 import Price from "./Price";
+import { Helmet } from "react-helmet";
 
-const Title = styled.h1`
-  font-size: 48px;
-  color: ${(props) => props.theme.accentColor};
-`;
-const Loader = styled.span`
-  text-align: center;
-  display: block;
-`;
-const Container = styled.div`
-  padding: 0px 20px;
-  max-width: 480px;
-  margin: 0 auto;
-`;
-const Header = styled.header`
-  height: 15vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-const Overview = styled.div`
-  display: flex;
-  justify-content: space-between;
-  background-color: rgba(0, 0, 0, 0.5);
-  padding: 10px 20px;
-  border-radius: 10px;
-`;
-const OverviewItem = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 33%;
-  span:first-child {
-    font-size: 10px;
-    font-weight: 400;
+function Coin() {
+  const Container = styled.div`
+    padding: 0px 20px;
+    max-width: 480px;
+    margin: 0 auto;
+    height: 120vh;
+    background-color: ${(props) => props.theme.bgColor};
+    color: ${(props) => props.theme.textColor};
+  `;
+  const Header = styled.header`
+    height: 10vh;
+    padding: 100px 0px;
+    display: flex;
+    justify-content: center;
+    /* align-items: center; */
+    position: relative;
+  `;
+
+  const Back = styled.button`
+    font-size: 20px;
+    position: absolute;
+    left: 0px;
+    top: 10px;
+    display: block;
+  `;
+
+  const Title = styled.h1`
+    font-size: 60px;
+    display: block;
+    margin-bottom: 20px;
+  `;
+  const Loader = styled.span`
+    text-align: center;
+  `;
+
+  const OverView = styled.div`
+    background-color: darkgray;
+    width: 90%;
+    height: 70px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: auto;
+    padding: 00px 40px;
+    margin-bottom: 30px;
+  `;
+
+  const OverViewItem = styled.div`
+    /* background-color: yellowgreen; */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    & span:first-child {
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+  `;
+
+  const Description = styled.div`
+    display: flex;
+    font-size: 12px;
+    /* text-align: center; */
+    width: 90%;
+    margin: auto;
+    margin-bottom: 30px;
+  `;
+
+  const Tabs = styled.div`
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    width: 90%;
+    margin: auto;
+    justify-content: space-evenly;
+  `;
+
+  const Tab = styled.div<{ isActive: boolean }>`
+    background-color: darkgray;
+    text-align: center;
     text-transform: uppercase;
     margin-bottom: 5px;
   }
@@ -149,7 +198,15 @@ function Coin() {
   const loading = infoLoading || tickersLoading;
   return (
     <Container>
+      <Helmet>
+        <title>
+          {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
+        </title>
+      </Helmet>
       <Header>
+        <Link to={`/`}>
+          <Back>go back</Back>
+        </Link>
         <Title>
           {state?.name ? state.name : loading ? "Loading..." : infoData?.name}
         </Title>
@@ -162,16 +219,17 @@ function Coin() {
             <OverviewItem>
               <span>Rank:</span>
               <span>{infoData?.rank}</span>
-            </OverviewItem>
-            <OverviewItem>
-              <span>Symbol:</span>
-              <span>${infoData?.symbol}</span>
-            </OverviewItem>
-            <OverviewItem>
-              <span>Open Source:</span>
-              <span>{infoData?.open_source ? "Yes" : "No"}</span>
-            </OverviewItem>
-          </Overview>
+            </OverViewItem>
+            <OverViewItem>
+              <span>symbol</span>
+              <span>{infoData?.symbol}</span>
+            </OverViewItem>
+            <OverViewItem>
+              <span>Price:</span>
+              <span>${tickersData?.quotes.USD.price.toFixed(3)}</span>
+            </OverViewItem>
+          </OverView>
+
           <Description>{infoData?.description}</Description>
           <Overview>
             <OverviewItem>
@@ -193,7 +251,10 @@ function Coin() {
             </Tab>
           </Tabs>
           <Switch>
-            <Route path={`/:coinId/price`}>
+            <Route path="/:coinId/chart">
+              <Chart coinId={coinId} />
+            </Route>
+            <Route path="/:coinId/price">
               <Price />
             </Route>
             <Route path={`/:coinId/chart`}>
