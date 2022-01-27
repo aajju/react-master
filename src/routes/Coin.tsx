@@ -1,11 +1,11 @@
 import { useQuery } from "react-query";
 import {
-  Route,
   Switch,
+  Route,
   useLocation,
   useParams,
   useRouteMatch,
-} from "react-router";
+} from "react-router-dom";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
 import { fetchCoinInfo, fetchCoinTickers, InfoData, PriceData } from "../api";
@@ -143,17 +143,17 @@ const Tab = styled.div<{ isActive: boolean }>`
   }
 `;
 
+interface RouteParams {
+  coinId: string;
+}
+
+interface RouteState {
+  name: string;
+}
+
 // ------ function ------
 
 function Coin() {
-  interface RouteParams {
-    coinId: string;
-  }
-
-  interface RouteState {
-    name: string;
-  }
-
   const { coinId } = useParams<RouteParams>();
   console.log(coinId);
   // const { name } = useLocation().state as RouteState;
@@ -177,9 +177,7 @@ function Coin() {
       return fetchCoinTickers(coinId);
     }
   );
-
   const loading = infoLoading || tickersLoading;
-
   return (
     <Container>
       <Helmet>
@@ -200,12 +198,12 @@ function Coin() {
         </DarkToggle>
       </Header>
       {loading ? (
-        <Loader>loading...</Loader>
+        <Loader>Loading...</Loader>
       ) : (
         <>
           <OverView>
             <OverViewItem>
-              <span>rank</span>
+              <span>Rank:</span>
               <span>{infoData?.rank}</span>
             </OverViewItem>
             <OverViewItem>
@@ -219,6 +217,16 @@ function Coin() {
           </OverView>
 
           <Description>{infoData?.description}</Description>
+          <OverView>
+            <OverViewItem>
+              <span>Total Suply:</span>
+              <span>{tickersData?.total_supply}</span>
+            </OverViewItem>
+            <OverViewItem>
+              <span>Max Supply:</span>
+              <span>{tickersData?.max_supply}</span>
+            </OverViewItem>
+          </OverView>
 
           <OverView>
             <OverViewItem>
@@ -254,7 +262,6 @@ function Coin() {
               </Link>
             </Tab>
           </Tabs>
-
           <Switch>
             <Route path="/:random3/chart">
               <Chart coinId={coinId} />

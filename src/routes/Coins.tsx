@@ -75,6 +75,12 @@ const Loader = styled.span`
   text-align: center;
 `;
 
+const Img = styled.img`
+  width: 35px;
+  height: 35px;
+  margin-right: 10px;
+`;
+
 // -------- fucntion --------
 
 function Coins() {
@@ -90,20 +96,6 @@ function Coins() {
 
   const { isLoading, data } = useQuery<coinsState[]>("allCoins", fetchCoins);
 
-  // const [coins, setCoins] = useState<coinsState[]>([]);
-  // const [loading, setLoading] = useState(true);
-
-  // useEffect(() => {
-  //   (async () => {
-  //     const response = await fetch("https://api.coinpaprika.com/v1/coins");
-  //     const json = await response.json();
-  //     setCoins(json.slice(0, 100));
-  //     setLoading(false);
-  //   })();
-  // }, []);
-
-  // console.log(coins);
-
   const [DarkAtom, setDarkAtom] = useRecoilState(isDarkAtom);
 
   return (
@@ -117,30 +109,28 @@ function Coins() {
           <span>{DarkAtom ? "white mode" : "dark mode"}</span>
         </DarkToggle>
       </Header>
-      <CoinsList>
-        {isLoading ? (
-          <Loader>loading...</Loader>
-        ) : (
-          data?.slice(0, 100).map((coin) => (
-            <CoinCard key={coin.id}>
+      {isLoading ? (
+        <Loader>Loading...</Loader>
+      ) : (
+        <CoinsList>
+          {data?.slice(0, 100).map((coin) => (
+            <CoinCard key={CoinCard.id}>
               <Link
                 to={{
                   pathname: `/${coin.id}/chart`,
                   state: { name: coin.name },
                 }}
               >
-                <img
+                <Img
                   src={`https://cryptoicon-api.vercel.app/api/icon/${coin.symbol.toLowerCase()}`}
-                  alt=""
                 />
-                <div>{coin.name} &rarr;</div>
+                {coin.name} &rarr;
               </Link>
             </CoinCard>
-          ))
-        )}
-      </CoinsList>
+          ))}
+        </CoinsList>
+      )}
     </Container>
   );
 }
-
 export default Coins;
