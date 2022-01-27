@@ -75,6 +75,12 @@ const Loader = styled.span`
   text-align: center;
 `;
 
+const Img = styled.img`
+  width: 35px;
+  height: 35px;
+  margin-right: 10px;
+`;
+
 // -------- fucntion --------
 
 function Coins() {
@@ -87,30 +93,8 @@ function Coins() {
     symbol: string;
     type: string;
   }
-`;
-const Title = styled.h1`
-  font-size: 48px;
-  color: ${(props) => props.theme.accentColor};
-`;
-const Loader = styled.span`
-  text-align: center;
-  display: block;
-`;
-const Img = styled.img`
-  width: 35px;
-  height: 35px;
-  margin-right: 10px;
-`;
 
-interface ICoin {
-  id: string;
-  name: string;
-  symbol: string;
-  rank: number;
-  is_new: boolean;
-  is_active: boolean;
-  type: string;
-}
+  const { isLoading, data } = useQuery<coinsState[]>("allCoins", fetchCoins);
 
   const [DarkAtom, setDarkAtom] = useRecoilState(isDarkAtom);
 
@@ -130,10 +114,10 @@ interface ICoin {
       ) : (
         <CoinsList>
           {data?.slice(0, 100).map((coin) => (
-            <Coin key={coin.id}>
+            <CoinCard key={CoinCard.id}>
               <Link
                 to={{
-                  pathname: `/${coin.id}`,
+                  pathname: `/${coin.id}/chart`,
                   state: { name: coin.name },
                 }}
               >
@@ -142,7 +126,7 @@ interface ICoin {
                 />
                 {coin.name} &rarr;
               </Link>
-            </Coin>
+            </CoinCard>
           ))}
         </CoinsList>
       )}
