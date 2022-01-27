@@ -260,7 +260,7 @@ function Coin() {
               <Chart coinId={coinId} />
             </Route>
             <Route path="/:random4/price">
-              <Price />
+              <Price aaa={infoData} bbb={tickersData} />
             </Route>
           </Switch>
         </>

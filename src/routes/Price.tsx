@@ -3,12 +3,12 @@ import { InfoData, PriceData } from "../api";
 import { selectedCoin } from "../atoms";
 
 interface IPriceProps {
-  abc: InfoData;
-  aaa: PriceData;
+  aaa: InfoData;
+  bbb: PriceData;
 }
 
-function Price() {
-  // console.log(abc, aaa);
+function Price({ aaa, bbb }: IPriceProps) {
+  console.log(aaa, bbb);
   return <h1>hello</h1>;
 }
 
